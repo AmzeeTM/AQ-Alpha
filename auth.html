@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQ - Connexion / Inscription</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #282828;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    .switch {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .switch button {
+      background-color: transparent;
+      border: none;
+      font-size: 1rem;
+      padding: 10px 20px;
+      cursor: pointer;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .switch button.active {
+      color: white;
+      font-weight: bold;
+      border-bottom: 2px solid #d81920;
+    }
+    form {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+    form.active {
+      display: flex;
+    }
+    input {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    button.submit-btn {
+      background-color: #d81920;
+      padding: 12px;
+      border: none;
+      border-radius: 20px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #loader {
+      animation: blink 1s infinite;
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="switch">
+      <button id="btnLogin" class="active" onclick="toggleForm('login')">Se connecter</button>
+      <button id="btnRegister" onclick="toggleForm('register')">Créer un compte</button>
+    </div>
+
+    <form id="loginForm" class="active" onsubmit="handleLogin(event)">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+      <button class="submit-btn" type="submit">Connexion</button>
+    </form>
+
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <input type="text" id="registerName" placeholder="Nom complet" required>
+      <input type="email" id="registerEmail" placeholder="Email" required>
+      <input type="password" id="registerPassword" placeholder="Mot de passe" required>
+      <button class="submit-btn" type="submit">Créer mon compte</button>
+    </form>
+
+<div style="text-align:center; margin-top:20px;">
+  <button onclick="devLogin('admin')" class="submit-btn">👑 Dev : Simuler admin</button><br><br>
+  <button onclick="devLogin('rh')" class="submit-btn">👤 Dev : Simuler rh</button><br><br>
+  <button onclick="devLogin('joueur')" class="submit-btn">🎮 Dev : Simuler joueur</button><br><br>
+  <button onclick="devLogin('visiteur')" class="submit-btn">👤 Dev : Simuler visiteur</button>
+</div>
+
+
+    <div id="loader" style="display:none;">⏳ En cours de traitement...</div>
+  </div>
+
+  <script>
+    function toggleForm(type) {
+      document.getElementById('loginForm').classList.remove('active');
+      document.getElementById('registerForm').classList.remove('active');
+      document.getElementById('btnLogin').classList.remove('active');
+      document.getElementById('btnRegister').classList.remove('active');
+
+      if (type === 'login') {
+        document.getElementById('loginForm').classList.add('active');
+        document.getElementById('btnLogin').classList.add('active');
+      } else {
+        document.getElementById('registerForm').classList.add('active');
+        document.getElementById('btnRegister').classList.add('active');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const loader = document.getElementById('loader');
+      loader.style.display = "block";
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbyYR4AqAG6VVuNr4khK6s2j7r_I85cEeLK_e4bnjB8Lh8HR5oCcG2EyFi2G8425t8Xxuw/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "register",
+            name,
+            email,
+            password
+          })
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        if (result.success) {
+          // Redirige après inscription
+          localStorage.setItem("role", result.role || "visiteur");
+          window.location.href = "LandingPage.html";
+        }
+      } catch (err) {
+        alert("Erreur lors de la création du compte.");
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const response = await fetch("https://script.google.com/macros/s/AKfycbyYR4AqAG6VVuNr4khK6s2j7r_I85cEeLK_e4bnjB8Lh8HR5oCcG2EyFi2G8425t8Xxuw/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "login",
+          email,
+          password
+        })
+      });
+
+function devLogin(role) {
+  localStorage.setItem("role", role);
+  alert(`Simulé en tant que : ${role}`);
+  window.location.href = role === "visiteur" ? "Index.html" : "/dashboard";
+}
+
+      const result = await response.json();
+      console.log("Résultat login :", result);
+	alert(result.message);
+      if (result.success) {
+        localStorage.setItem("role", result.role);
+        window.location.href = result.role === "visiteur" ? "Index.html" : "/dashboard";
+      }
+    }
+  </script>
+<script>
+  function devLogin(role) {
+    localStorage.setItem("role", role);
+    alert(`Mode Dev ➜ Rôle simulé : ${role}`);
+    redirectByRole();
+  }
+
+  function redirectByRole() {
+    const role = localStorage.getItem("role");
+
+    if (!role) {
+      alert("Aucun rôle détecté. Veuillez vous connecter.");
+      window.location.href = "auth.html";
+      return;
+    }
+
+    switch (role) {
+      case "admin":
+        window.location.href = "Dashboard_admin.html";
+        break;
+      case "rh":
+        window.location.href = "Dashboard_RH.html";
+        break;
+      case "joueur":
+        window.location.href = "Dashboard.html";
+        break;
+      case "visiteur":
+      default:
+        window.location.href = "Index.html";
+        break;
+    }
+  }
+</script>
+
+
+</body>
+</html>
